@@ -1,0 +1,20 @@
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+#board {
+  margin: 0 auto;
+  height: 400px;
+  width: 400px;
+  padding: 10px;
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  grid-gap: 5px;
+}
+
+#board button {
+  border: 1px solid black;
+}
