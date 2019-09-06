@@ -29,11 +29,6 @@ const Gameboard = (function() {
     [null, null, null],
     [null, null, null]
   ]
-  let sample = [
-    ['X', 'O', 'X'],
-    ['O', 'X', 'X'],
-    ['O', 'O', 'X']
-  ]
 
   const reset = function() {
     current = [
@@ -41,14 +36,41 @@ const Gameboard = (function() {
       [null, null, null],
       [null, null, null]
     ]
+    _activateButtons()
+    _render()
   }
 
-  const addMove = function(playerSymbol, coords) {
+  const _activateButtons = function() {
+    const buttons = document.querySelectorAll('button')
+    buttons.forEach((btn) => btn.addEventListener('click', _makeMove))
+  }
+
+  const _deactivateButton = function(button) {
+    button.removeEventListener('click', _makeMove)
+  }
+
+  const _parseCoord = function(button) {
+    return button.dataset.coord.split(",").map((n) => parseInt(n))
+  }
+
+  const _makeMove = function(e) {
+    const currentPlayer = Game.getCurrentPlayer();
+    const button = e.target;
+    const coord = _parseCoord(button) 
+    _deactivateButton(button)
+    _addMove(currentPlayer.symbol, coord)
+    _render()
+    if (_hasDraw()) Game.endGame('draw');
+    else if (_hasWinner(currentPlayer.symbol)) Game.endGame('win');
+    else Game.switchPlayer();
+  }
+
+  const _addMove = function(playerSymbol, coords) {
     let [x, y] = coords
     current[y][x] = playerSymbol
   }
 
-  const render = function(board) {
+  const _render = function(board) {
     let buttonIndex = 0
     board = board || current
     board.forEach((row) => {
@@ -60,7 +82,7 @@ const Gameboard = (function() {
     })
   }
 
-  const hasDraw = function() {
+  const _hasDraw = function() {
     const boardFull = current.every((row) => row.every((cell) => cell))
     return boardFull && !hasWinner()
   }
@@ -68,10 +90,10 @@ const Gameboard = (function() {
   const _animateWinningSeries = function(series) {
     // TODO: change color of winning cells
     console.log('Winning series: (TODO: Replace with animation)')
-    console.log(series)
+    console.log(JSON.stringify(series))
   }
 
-  const hasWinner = function(playerSymbol, board) {
+  const _hasWinner = function(playerSymbol, board) {
     /* Note: this could be optimized slightly by taking coord and player as args and filtering possible series by those */
     board = board || current
 
@@ -95,18 +117,14 @@ const Gameboard = (function() {
 
     if (winningSeries) {
       _animateWinningSeries(winningSeries)
-      return true
-    }
-    return false
-  }
+      return true;
+    } else {
+      return false;
+    };
+  };
 
   return {
-    current,
-    reset,
-    render,
-    addMove,
-    hasDraw,
-    hasWinner,
+    reset
   }
 })();
 
@@ -116,16 +134,10 @@ const Gameboard = (function() {
 const Player = function(name, symbol) {
   let score = 0;
 
-  const makeMove = function (coord) {
-    // Maybe this doesn't need to be in a player object
-    Gameboard.addMove(symbol, coord)
-  }
-
   return {
     symbol,
     score,
     name,
-    makeMove
   }
 };
 
@@ -134,46 +146,42 @@ const Player = function(name, symbol) {
 
 const Game = (function () {
   // TODO: Set up players (human or AI)
-  const player1 = Player('player one', 'X')
-  const player2 = Player('player two', 'O')
-  let currentPlayer;
+  const player1 = Player('Player one', 'X')
+  const player2 = Player('Player two', 'O')
+  let currentPlayer = player1;
 
   const newGame = function() {
     currentPlayer = player1;
     Gameboard.reset()
-    Gameboard.render()
-    activateButtons()
   }
 
-  const activateButtons = function() {
-    const buttons = document.querySelectorAll('button')
-    buttons.forEach((btn) => btn.addEventListener('click', makeMove))
-  }
-
-  const makeMove = function(e) {
-    e.target.removeEventListener('click', makeMove)
-    let coord = e.target.dataset.coord.split(",").map((n) => parseInt(n))
-    currentPlayer.makeMove(coord)
-    Gameboard.render()
-    // TODO: Compartmentalize logic here
-    if (Gameboard.hasDraw()) { 
-      const drawPrompt = "It's a draw!\n\nPlay again?"
-      if (confirm(drawPrompt)) newGame();
-    } else if (Gameboard.hasWinner(currentPlayer.symbol)) {
-      currentPlayer.score += 1
-      const winPrompt = `${currentPlayer.name} wins!\n\nPlay again?`;
-      if (confirm(winPrompt)) newGame();
-      // TODO: show winning play
-    }
-    switchPlayer()
-  }
+  // A solution to an interesting problem:
+  const getCurrentPlayer = () => currentPlayer;
+  // Some tests and their results:
+  // Game.currentPlayer  -->  (player1)
+  // Game.switchPlayer()
+  // Game.currentPlayer --> (player1)  -- Why?
+  // Game.getCurrentPlayer() --> (player2)
+  // Game.currentPlayer = 1
+  // Game.currentPlayer   (-->  1)
+  // Game.getCurrentPlayer()   --> (still player2)
 
   const switchPlayer = function () {
     currentPlayer = (currentPlayer == player1) ? player2 : player1;
   }
 
+  const endGame = function(condition) {
+    if (condition == 'win') currentPlayer.score += 1
+    const message = ((condition == 'win') ? `${currentPlayer.name} wins!` : 
+      "It's a draw!") + "\n\nPlay again?"
+    if (confirm(message)) newGame();
+  }
+
   return {
     newGame,
+    getCurrentPlayer,
+    switchPlayer,
+    endGame
   }
 })();
 
