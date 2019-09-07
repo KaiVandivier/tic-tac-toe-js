@@ -40,6 +40,11 @@ const Gameboard = (function() {
     _render()
   }
 
+  const deactivate = function() {
+    const buttons = document.querySelectorAll('#board button');
+    buttons.forEach((button) => _deactivateButton(button));
+  }
+
   const _activateButtons = function() {
     const buttons = document.querySelectorAll('#board button')
     buttons.forEach((btn) => {
@@ -128,14 +133,18 @@ const Gameboard = (function() {
   };
 
   return {
-    reset
+    reset,
+    deactivate
   }
 })();
 
 
 /* ---------------------------------------- */
 
-const Player = function(name, symbol) {
+const Player = function(symbol, name, type) {
+  // TODO: Handle types (Human or AI)
+  // Three types: 'human', 'randAI', or 'minimaxAI'
+
   let score = 0;
 
   return {
@@ -149,19 +158,40 @@ const Player = function(name, symbol) {
 /* ---------------------------------------- */
 
 const Game = (function () {
-  // TODO: Set up players (choose human or AI; choose name)
+  // DONE: Set up players (choose human or AI; choose name)
+  // TODO: Get moves from AI
   
-  const player1 = Player('Player one', 'X')
-  const player2 = Player('Player two', 'O')
+  let player1 = Player('X', 'Player one', 'human') // Default
+  let player2 = Player('O', 'Player two', 'human')
   let currentPlayer = player1;
 
   // A solution to an interesting problem, see notes at bottom
   const getCurrentPlayer = () => currentPlayer;
 
+  const submitOptions = function() {
+    const formContents = document.getElementById('options').elements
+    player1 = Player('X', 
+      formContents['p1-name'].value, 
+      formContents['p1-type'].value);
+    player2 = Player('O', 
+      formContents['p2-name'].value, 
+      formContents['p2-type'].value);
+    newGame(); // Load game
+    _toggleForm(); // Close form
+    _toggleScores(); // Show scores
+  }
+
+  const resetGame = function() {
+    Gameboard.reset(); // Wipe board
+    Gameboard.deactivate(); // Disable board
+    _toggleScores(); // Hide scores div
+    _toggleForm(); // Show options form
+  }
+
   const newGame = function() {
     currentPlayer = player1;
     Gameboard.reset();
-    updateScores();
+    _updateScores();
   }
 
   const switchPlayer = function () {
@@ -171,35 +201,49 @@ const Game = (function () {
     // (Maybe make a Player.passTurn() function that does this privately)
   }
 
-  const updateScores = function() {
+  const endGame = function(condition) {
+    Gameboard.deactivate();
+    if (condition == 'win') currentPlayer.score += 1
+    _updateScores();
+    const message = ((condition == 'win') ? `${currentPlayer.name} wins!` : 
+      "It's a draw!") + "\n\nPlay again?"
+    if (confirm(message)) newGame();
+  }
+
+  const _updateScores = function() {
     const scoreboard = document.getElementById('scores');
     const message = `${player1.name}: ${player1.score}, ` +
       `${player2.name}: ${player2.score}.`;
     scoreboard.textContent = message;
   }
 
-  const endGame = function(condition) {
-    // TODO: Deactivate all buttons
-    if (condition == 'win') currentPlayer.score += 1
-    updateScores();
-    const message = ((condition == 'win') ? `${currentPlayer.name} wins!` : 
-      "It's a draw!") + "\n\nPlay again?"
-    if (confirm(message)) newGame();
+  const _toggleForm = function() {
+    document.getElementById('options').classList.toggle('hidden');
+  }
+
+  const _toggleScores = function() {
+    document.getElementById('scores-div').classList.toggle('hidden');
   }
 
   // Question: what scope does this belong in?
   const newGameButton = document.getElementById('new-game'); 
-  newGameButton.addEventListener('click', newGame) // TODO: Confirm?
+  newGameButton.addEventListener('click', () => {
+    if (confirm('Are you sure you want to start this game over?')) newGame()
+  });
+
+  const resetButton = document.getElementById('reset');
+  resetButton.addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset?')) resetGame()
+  });
 
   return {
+    submitOptions,
     newGame,
     getCurrentPlayer,
     switchPlayer,
     endGame
   }
 })();
-
-Game.newGame();
 
 // Puzzle mentioned above:
   // Some tests and their results:

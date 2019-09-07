@@ -8,12 +8,41 @@
 
 <body>
   <h1>Tic Tac Toe!</h1>
-  <h2>Scores:</h2>
-  <h3 id="scores"></h3>
-  <p>
-    <button id="new-game">New Game</button>
-    <button id="reset">Reset Players and Scores</button>
-  </p>
+  <div id="scores-div" class="hidden">
+    <h2>Scores:</h2>
+    <h3 id="scores"></h3>
+    <p>
+      <button id="new-game">New Game</button>
+      <button id="reset">Reset Players and Scores</button>
+    </p>
+  </div>
+
+  <form id="options" action="javascript:Game.submitOptions();">
+    <p>Please enter the following options to play:</p>
+    <label for="p1-name">Player 1 name: </label>
+    <input type="text" id="p1-name" value="Player 1" required>
+    <br>
+    <label for="p2-name">Player 2 name: </label>
+    <input type="text" id="p2-name" value="Player 2" required>
+    <br>
+    <label for="p1-type">Player 1: Human or AI?</label>
+    <select id="p1-type">
+      <option value="human">Human</option>
+      <option value="randAI">AI that plays random moves</option>
+      <option value="minimaxAI">AI using minimax algorithm</option>
+    </select>
+    <br>
+    <label for="p2-type">Player 2: Human or AI?</label>
+    <select id="p2-type">
+      <option value="human">Human</option>
+      <option value="randAI">AI that plays random moves</option>
+      <option value="minimaxAI">AI using minimax algorithm</option>
+    </select>
+    <br><br>
+    <input type="submit" value="Save and Begin Playing">
+    <input type="reset" value="Reset Form">
+    <br>
+  </form>
 
   <div id="board">
     <button id="btn0" data-coord="0,0"></button>
