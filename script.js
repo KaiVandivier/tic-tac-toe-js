@@ -10,17 +10,15 @@ GAMEBOARD:
 -Determines winner/draw
 
 PLAYER:
+-Gets a move (waits for a human; runs algorithm for AI)
 -Stores a score, name, and symbol (X or O)
 
 GAME:
 -Prompts a player for a move
 -Switches player
 -Calls to display board
--Displays winner
+-Ends game, displays winner
 -Keeps score
-
-DISPLAY ADAPTER: (Done, achieved in Gameboard module)
--Prints gameboard out using DOM
 */
 
 const Gameboard = (function() {
@@ -29,6 +27,8 @@ const Gameboard = (function() {
     [null, null, null],
     [null, null, null]
   ]
+
+  const getCurrent = () => current;
 
   const reset = function() {
     current = [
@@ -41,6 +41,7 @@ const Gameboard = (function() {
   }
 
   const deactivate = function() {
+    // Logic might need to change
     const buttons = document.querySelectorAll('#board button');
     buttons.forEach((button) => _deactivateButton(button));
   }
@@ -48,34 +49,41 @@ const Gameboard = (function() {
   const _activateButtons = function() {
     const buttons = document.querySelectorAll('#board button')
     buttons.forEach((btn) => {
-      btn.addEventListener('click', _makeMove);
+      btn.addEventListener('click', _chooseMove);
       btn.classList.remove('winning-series');
     });
   }
 
   const _deactivateButton = function(button) {
-    button.removeEventListener('click', _makeMove)
+    // Maybe need to refactor to select button by coord
+    // if (id instanceof Array) { ... }
+    // else (id instanceof HTMLFormElement { ... })
+    // const id = coord.join(',');
+    // const button = document.querySelector(`button[data-coord="${id}"]`);
+    button.removeEventListener('click', _chooseMove)
   }
 
   const _parseCoord = function(button) {
     return button.dataset.coord.split(",").map((n) => parseInt(n))
   }
 
-  const _makeMove = function(e) {
-    const button = e.target;
-    const coord = _parseCoord(button) 
-    _deactivateButton(button)
-    _addMove(coord)
+  const _chooseMove = function(e) {
+    addMove(_parseCoord(e.target))
+  }
+
+  const addMove = function(coord) {
+    const [x, y] = coord
+    const playerSymbol = Game.getCurrentPlayer().symbol
+    current[y][x] = playerSymbol
+
+    const id = coord.join(',');
+    const button = document.querySelector(`button[data-coord="${id}"]`)
+    _deactivateButton(button) // Maybe move logic above to "deactivate"?
+
     _render()
     if (_hasDraw()) Game.endGame('draw');
     else if (_hasWinner()) Game.endGame('win');
     else Game.switchPlayer();
-  }
-
-  const _addMove = function(coords) {
-    const [x, y] = coords
-    const playerSymbol = Game.getCurrentPlayer().symbol
-    current[y][x] = playerSymbol
   }
 
   const _render = function(board) {
@@ -133,8 +141,27 @@ const Gameboard = (function() {
   };
 
   return {
+    getCurrent,
+    addMove,
     reset,
     deactivate
+  }
+})();
+
+const AI = (function() {
+  const getRandomMove = function() {
+    // TODO
+    console.log('getting random move!');
+  }
+
+  const getMinimaxMove = function() {
+    // TODO
+    console.log('getting minimax move!');
+  }
+
+  return {
+    getRandomMove,
+    getMinimaxMove
   }
 })();
 
@@ -147,10 +174,27 @@ const Player = function(symbol, name, type) {
 
   let score = 0;
 
+  const getMove = function() {
+    let coord;
+    switch (type) {
+      case 'human':
+        return;
+      case 'randAI':
+        // TODO: get random move
+        coord = AI.getRandomMove();
+        break;
+      case 'minimaxAI':
+        // TODO: get minimaxed move
+        coord = AI.getMinimaxMove();
+    }
+    // Gameboard.addMove(coord)
+  }
+
   return {
     symbol,
     score,
     name,
+    getMove,
   }
 };
 
@@ -189,16 +233,15 @@ const Game = (function () {
   }
 
   const newGame = function() {
-    currentPlayer = player1;
     Gameboard.reset();
     _updateScores();
+    currentPlayer = player1;
+    currentPlayer.getMove();
   }
 
   const switchPlayer = function () {
     currentPlayer = (currentPlayer == player1) ? player2 : player1;
-    // If current player is a human, wait for move
-    // If current player is an AI, get move
-    // (Maybe make a Player.passTurn() function that does this privately)
+    currentPlayer.getMove();
   }
 
   const endGame = function(condition) {
