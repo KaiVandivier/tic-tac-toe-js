@@ -150,24 +150,34 @@ const Player = function(name, symbol) {
 
 const Game = (function () {
   // TODO: Set up players (choose human or AI)
+
   const player1 = Player('Player one', 'X')
   const player2 = Player('Player two', 'O')
   let currentPlayer = player1;
 
-  const newGame = function() {
-    currentPlayer = player1;
-    Gameboard.reset()
-  }
-
   // A solution to an interesting problem, see notes at bottom
   const getCurrentPlayer = () => currentPlayer;
+
+  const newGame = function() {
+    currentPlayer = player1;
+    Gameboard.reset();
+    updateScores();
+  }
 
   const switchPlayer = function () {
     currentPlayer = (currentPlayer == player1) ? player2 : player1;
   }
 
+  const updateScores = function() {
+    const scoreboard = document.getElementById('scores');
+    const message = `${player1.name}: ${player1.score}. ` +
+      `${player2.name}: ${player2.score}.`;
+    scoreboard.textContent = message;
+  }
+
   const endGame = function(condition) {
     if (condition == 'win') currentPlayer.score += 1
+    updateScores();
     const message = ((condition == 'win') ? `${currentPlayer.name} wins!` : 
       "It's a draw!") + "\n\nPlay again?"
     if (confirm(message)) newGame();
