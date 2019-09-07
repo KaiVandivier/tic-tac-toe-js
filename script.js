@@ -13,6 +13,9 @@ PLAYER:
 -Gets a move (waits for a human; runs algorithm for AI)
 -Stores a score, name, and symbol (X or O)
 
+AI:
+-Chooses and makes a move based on algorithm choice
+
 GAME:
 -Prompts a player for a move
 -Switches player
@@ -41,7 +44,7 @@ const Gameboard = (function() {
   }
 
   const deactivate = function() {
-    // Logic might need to change
+    // Logic might need to change...
     const buttons = document.querySelectorAll('#board button');
     buttons.forEach((button) => _deactivateButton(button));
   }
@@ -55,11 +58,19 @@ const Gameboard = (function() {
   }
 
   const _deactivateButton = function(button) {
-    // Maybe need to refactor to select button by coord
-    // if (id instanceof Array) { ... }
-    // else (id instanceof HTMLFormElement { ... })
-    // const id = coord.join(',');
-    // const button = document.querySelector(`button[data-coord="${id}"]`);
+    /*/ Maybe need to refactor to select button by coord OR button:  
+    --- Note: This code sometimes throws a "button is undefined" error ---
+    
+    const _deactivateButton = function(id) {
+    let button;
+    if (id instanceof Array) { 
+      id = id.join(',');
+      button = document.querySelector(`button[data-coord="${id}"]`);
+    }
+    else if (id instanceof HTMLFormElement) { 
+      button = id;
+    }  
+    */
     button.removeEventListener('click', _chooseMove)
   }
 
@@ -150,13 +161,26 @@ const Gameboard = (function() {
 
 const AI = (function() {
   const getRandomMove = function() {
-    // TODO
-    console.log('getting random move!');
+    // WORKING
+    let possibleMoves = _getPossibleMoves();
+    const randomIndex = Math.floor(Math.random() * possibleMoves.length)
+    return possibleMoves[randomIndex];
   }
 
   const getMinimaxMove = function() {
     // TODO
-    console.log('getting minimax move!');
+    console.log('(TODO): getting minimax move!');
+  }
+
+  const _getPossibleMoves = function() {
+    const currentBoard = Gameboard.getCurrent();
+    let possibleMoves = [];
+    currentBoard.forEach((row, y) => {
+      row.forEach((val, x) => {
+        if (val === null) possibleMoves.push([x,y])
+      })
+    });
+    return possibleMoves;
   }
 
   return {
@@ -180,8 +204,9 @@ const Player = function(symbol, name, type) {
       case 'human':
         return;
       case 'randAI':
-        // TODO: get random move
+        // WORKING: get random move
         coord = AI.getRandomMove();
+        Gameboard.addMove(coord)
         break;
       case 'minimaxAI':
         // TODO: get minimaxed move
@@ -220,16 +245,16 @@ const Game = (function () {
     player2 = Player('O', 
       formContents['p2-name'].value, 
       formContents['p2-type'].value);
-    newGame(); // Load game
-    _toggleForm(); // Close form
-    _toggleScores(); // Show scores
+    newGame();
+    _toggleForm();
+    _toggleScores();
   }
 
   const resetGame = function() {
-    Gameboard.reset(); // Wipe board
-    Gameboard.deactivate(); // Disable board
-    _toggleScores(); // Hide scores div
-    _toggleForm(); // Show options form
+    Gameboard.reset();
+    Gameboard.deactivate();
+    _toggleScores();
+    _toggleForm();
   }
 
   const newGame = function() {
@@ -250,6 +275,7 @@ const Game = (function () {
     _updateScores();
     const message = ((condition == 'win') ? `${currentPlayer.name} wins!` : 
       "It's a draw!") + "\n\nPlay again?"
+    // TODO: Change this from a confirm dialog
     if (confirm(message)) newGame();
   }
 
