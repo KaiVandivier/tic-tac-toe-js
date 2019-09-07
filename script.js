@@ -4,13 +4,13 @@
 
 GAMEBOARD:
 -Stores state of board
+-Renders board
+-Handles interaction
 -Adds move
--Determines winner
+-Determines winner/draw
 
 PLAYER:
--Makes move
--Switches to other player
--Stores a score?
+-Stores a score, name, and symbol (X or O)
 
 GAME:
 -Prompts a player for a move
@@ -42,7 +42,10 @@ const Gameboard = (function() {
 
   const _activateButtons = function() {
     const buttons = document.querySelectorAll('button')
-    buttons.forEach((btn) => btn.addEventListener('click', _makeMove))
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', _makeMove);
+      btn.classList.remove('winning-series');
+    });
   }
 
   const _deactivateButton = function(button) {
@@ -54,19 +57,19 @@ const Gameboard = (function() {
   }
 
   const _makeMove = function(e) {
-    const currentPlayer = Game.getCurrentPlayer();
     const button = e.target;
     const coord = _parseCoord(button) 
     _deactivateButton(button)
-    _addMove(currentPlayer.symbol, coord)
+    _addMove(coord)
     _render()
     if (_hasDraw()) Game.endGame('draw');
-    else if (_hasWinner(currentPlayer.symbol)) Game.endGame('win');
+    else if (_hasWinner()) Game.endGame('win');
     else Game.switchPlayer();
   }
 
-  const _addMove = function(playerSymbol, coords) {
-    let [x, y] = coords
+  const _addMove = function(coords) {
+    const [x, y] = coords
+    const playerSymbol = Game.getCurrentPlayer().symbol
     current[y][x] = playerSymbol
   }
 
@@ -84,18 +87,20 @@ const Gameboard = (function() {
 
   const _hasDraw = function() {
     const boardFull = current.every((row) => row.every((cell) => cell))
-    return boardFull && !hasWinner()
+    return boardFull && !_hasWinner()
   }
 
   const _animateWinningSeries = function(series) {
-    // TODO: change color of winning cells
-    console.log('Winning series: (TODO: Replace with animation)')
-    console.log(JSON.stringify(series))
+    const ids = series.map((coord) => coord.join(','))
+    const buttons = ids.map((id) => {
+      return document.querySelector(`button[data-coord="${id}"]`)
+    })
+    buttons.forEach((button) => button.classList.add('winning-series'))
   }
 
-  const _hasWinner = function(playerSymbol, board) {
-    /* Note: this could be optimized slightly by taking coord and player as args and filtering possible series by those */
+  const _hasWinner = function(board) { // optional argument is useful for testing
     board = board || current
+    playerSymbol = Game.getCurrentPlayer().symbol
 
     const possibleSeries = [
       [ [0,0],[1,0],[2,0] ], /* Rows */
@@ -118,9 +123,8 @@ const Gameboard = (function() {
     if (winningSeries) {
       _animateWinningSeries(winningSeries)
       return true;
-    } else {
-      return false;
-    };
+    } 
+    else return false;
   };
 
   return {
@@ -145,7 +149,7 @@ const Player = function(name, symbol) {
 /* ---------------------------------------- */
 
 const Game = (function () {
-  // TODO: Set up players (human or AI)
+  // TODO: Set up players (choose human or AI)
   const player1 = Player('Player one', 'X')
   const player2 = Player('Player two', 'O')
   let currentPlayer = player1;
@@ -155,16 +159,8 @@ const Game = (function () {
     Gameboard.reset()
   }
 
-  // A solution to an interesting problem:
+  // A solution to an interesting problem, see notes at bottom
   const getCurrentPlayer = () => currentPlayer;
-  // Some tests and their results:
-  // Game.currentPlayer  -->  (player1)
-  // Game.switchPlayer()
-  // Game.currentPlayer --> (player1)  -- Why?
-  // Game.getCurrentPlayer() --> (player2)
-  // Game.currentPlayer = 1
-  // Game.currentPlayer   (-->  1)
-  // Game.getCurrentPlayer()   --> (still player2)
 
   const switchPlayer = function () {
     currentPlayer = (currentPlayer == player1) ? player2 : player1;
@@ -186,3 +182,13 @@ const Game = (function () {
 })();
 
 Game.newGame();
+
+// Puzzle mentioned above:
+  // Some tests and their results:
+  // Game.currentPlayer  -->  (player1)
+  // Game.switchPlayer()
+  // Game.currentPlayer --> (player1)  -- Why?
+  // Game.getCurrentPlayer() --> (player2)
+  // Game.currentPlayer = 1
+  // Game.currentPlayer   (-->  1)
+  // Game.getCurrentPlayer()   --> (still player2)

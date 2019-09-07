@@ -18,3 +18,12 @@ body {
 #board button {
   border: 1px solid black;
 }
+
+button {
+  font-size: 60px;
+  border-radius: 10px;
+}
+
+.winning-series {
+  background-color: lightgreen;
+}
