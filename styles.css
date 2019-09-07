@@ -5,10 +5,15 @@ body {
   box-sizing: border-box;
 }
 
+h1, h2, h3, p {
+  line-height: 0;
+  text-align: center;
+}
+
 #board {
   margin: 0 auto;
-  height: 400px;
-  width: 400px;
+  height: 300px;
+  width: 300px;
   padding: 10px;
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
@@ -16,15 +21,13 @@ body {
 }
 
 #board button {
-  border: 1px solid black;
-}
-
-button {
+  background-color: lightblue;
+  border: 0px solid white;
   font-size: 60px;
   color: black;
   border-radius: 10px;
 }
 
-.winning-series {
+#board button.winning-series {
   background-color: lightgreen;
 }

@@ -41,7 +41,7 @@ const Gameboard = (function() {
   }
 
   const _activateButtons = function() {
-    const buttons = document.querySelectorAll('button')
+    const buttons = document.querySelectorAll('#board button')
     buttons.forEach((btn) => {
       btn.addEventListener('click', _makeMove);
       btn.classList.remove('winning-series');
@@ -149,8 +149,8 @@ const Player = function(name, symbol) {
 /* ---------------------------------------- */
 
 const Game = (function () {
-  // TODO: Set up players (choose human or AI)
-
+  // TODO: Set up players (choose human or AI; choose name)
+  
   const player1 = Player('Player one', 'X')
   const player2 = Player('Player two', 'O')
   let currentPlayer = player1;
@@ -166,22 +166,30 @@ const Game = (function () {
 
   const switchPlayer = function () {
     currentPlayer = (currentPlayer == player1) ? player2 : player1;
+    // If current player is a human, wait for move
+    // If current player is an AI, get move
+    // (Maybe make a Player.passTurn() function that does this privately)
   }
 
   const updateScores = function() {
     const scoreboard = document.getElementById('scores');
-    const message = `${player1.name}: ${player1.score}. ` +
+    const message = `${player1.name}: ${player1.score}, ` +
       `${player2.name}: ${player2.score}.`;
     scoreboard.textContent = message;
   }
 
   const endGame = function(condition) {
+    // TODO: Deactivate all buttons
     if (condition == 'win') currentPlayer.score += 1
     updateScores();
     const message = ((condition == 'win') ? `${currentPlayer.name} wins!` : 
       "It's a draw!") + "\n\nPlay again?"
     if (confirm(message)) newGame();
   }
+
+  // Question: what scope does this belong in?
+  const newGameButton = document.getElementById('new-game'); 
+  newGameButton.addEventListener('click', newGame) // TODO: Confirm?
 
   return {
     newGame,
