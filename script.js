@@ -67,8 +67,9 @@ const PageDisplay = (function() {
 
   const updateScores = function() {
     const scoreboard = document.getElementById('scores');
-    const message = `${Game.getPlayer1().name}: ${Game.getPlayer1().score}, ` +
-      `${Game.getPlayer2().name}: ${Game.getPlayer2().score}.`;
+    const message = 
+      `(X) ${Game.getPlayer1().name}: ${Game.getPlayer1().score}, ` +
+      `(O) ${Game.getPlayer2().name}: ${Game.getPlayer2().score}.`;
     scoreboard.textContent = message;
   }
 

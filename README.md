@@ -4,6 +4,7 @@ This is a simple Tic-Tac-Toe game in which the players can be humans or AI. It i
 
 
 TODO:
+
 -Speed up execution with caching
 
 -Form~: Find a way to avoid using JS in the HTML
@@ -20,9 +21,9 @@ TODO:
 
 
 DONE:
--Move testMove() into Gameboard
--Move getPossibleMoves() into Gameboard
--Alphabetize functions
+-Move testMove() into Gameboard. 
+-Move getPossibleMoves() into Gameboard. 
+-Alphabetize functions. 
 -Sort out "deactivateButton()" logic; maybe it's fine
   -Maybe make a "getButtonByCoord()" function in PageDisplay
 -Sort display elements into Page Display (scores, buttons, etc)
